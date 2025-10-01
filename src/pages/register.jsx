@@ -1,64 +1,58 @@
 import Input from "../component/inputLogin";
-import { useState } from "react";
+import * as yup from "yup";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
 
 export function Register() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState({ email: "", password: "" });
+  const schema = yup.object({
+    email: yup.string().required("harus diisi"),
+    password: yup
+      .string()
+      .required("harus diisi")
+      .matches(/[0-9]/, "harus angka")
+      .min(8, "minimal 8 character dan harus angka")
+      .max(20, "Maksimal 20 karakter")
+      .matches(/[A-Z]/, "Harus ada huruf besar"),
+  });
 
-  const validate = () => {
-    let emailError = "";
-    let passwordError = "";
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm({
+    resolver: yupResolver(schema),
+  });
 
-    if (!email.endsWith("@gmail.com")) {
-      emailError = "Email harus menggunakan @gmail.com";
-    }
-
-    if (password.length < 8) {
-      passwordError = "Password minimal 8 huruf";
-    }
-
-    setError({ email: emailError, password: passwordError });
-
-    return emailError === "" && passwordError === "";
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (validate()) {
-      alert("Register berhasil");
-      console.log("Email:", email);
-      console.log("Password:", password);
-    }
+  const onSubmit = (data) => {
+    console.log(data);
+    reset();
   };
 
   return (
     <div className="bg-[#E2E7F1] h-screen flex justify-center items-center">
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className="bg-white h-auto w-[40%] rounded-[30px] shadow-2xl p-[70px] flex flex-col justify-center items-center gap-5"
       >
         <h1 className="font-bold text-4xl">Welcome</h1>
 
         <div className="w-full flex flex-col items-center gap-2">
-          <Input
-            type="email"
-            placeholder="email..."
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          {error.email && <p className="text-red-500 text-sm">{error.email}</p>}
+          <Input {...register("email")} type="email" placeholder="email..." />
+          {errors.email && <span>{errors.email.message}</span>}
         </div>
 
         <div className="w-full flex flex-col items-center gap-2">
           <Input
+            {...register("password")}
             type="password"
             placeholder="password..."
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            min={8}
           />
-          {error.password && (
-            <p className="text-red-500 text-sm">{error.password}</p>
+          {errors.password && (
+            <span className="text-red-600 font-bold text-xl">
+              {errors.password.message}
+            </span>
           )}
         </div>
 
